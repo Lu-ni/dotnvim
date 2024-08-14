@@ -42,4 +42,13 @@ require("lazy").setup({
     },
     {"mbbill/undotree"},
     {"tpope/vim-fugitive"},
+        -- code formatting
+    {
+      'google/vim-codefmt',
+     -- enabled = working,
+      dependencies = {
+        'google/vim-maktaba',
+        {'google/vim-glaive', config = function() vim.cmd('call glaive#Install()') end},
+      },
+    },
 })
