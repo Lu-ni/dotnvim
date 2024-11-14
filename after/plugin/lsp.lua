@@ -38,13 +38,31 @@ require("lspconfig").pylsp.setup({
         pylsp = {
             plugins = {
                 pylint = {
-                    enabled = true,  -- Disable pylint
+                    enabled = true,  -- Enable pylint
                 },
                 pyflakes = { enabled = false },  -- Disable pyflakes
                 pycodestyle = { enabled = false },  -- Disable pycodestyle
             },
         },
     },
+})
+
+-- Configure diagnostics to only show errors and warnings
+vim.diagnostic.config({
+    virtual_text = {
+        severity = { min = vim.diagnostic.severity.WARN }
+    },
+    signs = {
+        severity = { min = vim.diagnostic.severity.WARN }
+    },
+    float = {
+        severity = { min = vim.diagnostic.severity.WARN }
+    },
+    underline = {
+        severity = { min = vim.diagnostic.severity.WARN }
+    },
+    update_in_insert = false,
+    severity_sort = true,
 })
 
 -- Function to toggle diagnostics
@@ -60,5 +78,5 @@ function ToggleDiagnostics()
 end
 
 -- Set up a keybinding to toggle diagnostics
-vim.api.nvim_set_keymap('n', '<leader>d', ':lua ToggleDiagnostics()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>D', ':lua ToggleDiagnostics()<CR>', { noremap = true, silent = true })
 

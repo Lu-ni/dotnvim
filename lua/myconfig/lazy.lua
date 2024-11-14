@@ -51,4 +51,9 @@ require("lazy").setup({
         {'google/vim-glaive', config = function() vim.cmd('call glaive#Install()') end},
       },
     },
+    {
+      "vhyrro/luarocks.nvim",
+      priority = 1000, -- Very high priority is required, luarocks.nvim should run as the first plugin in your config.
+      config = true,
+    },
 })
