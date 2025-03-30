@@ -9,12 +9,6 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "python",
-  command = "AutoFormatBuffer black",
-  group = autoformat_settings,
-})
-
-vim.api.nvim_create_autocmd("FileType", {
   pattern = "sql",
   command = "AutoFormatBuffer pg_format",
   group = autoformat_settings,
