@@ -45,8 +45,7 @@ function M.generate_hpp_boilerplate()
 
   -- Define the lines of code for the OCF boilerplate
   local lines = {
-    '#ifndef ' .. guard_symbol,
-    '#define ' .. guard_symbol,
+    '#pragma once ',
     '', -- Empty line for separation
     'class ' .. classname .. ' {',
     ' public:',
@@ -59,8 +58,6 @@ function M.generate_hpp_boilerplate()
     '  // Private members go here', -- Placeholder comment for private section
     '',
     '};',
-    '', -- Empty line for separation
-    '#endif // ' .. guard_symbol,
   }
 
   -- Replace the entire buffer content (start=0, end=-1, strict_indexing=false)
