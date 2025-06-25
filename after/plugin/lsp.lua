@@ -93,20 +93,31 @@ vim.diagnostic.config({
     update_in_insert = false,
     severity_sort = true,
 })
-
--- Function to toggle diagnostics
-local diagnostics_active = true
-
-function ToggleDiagnostics()
-    diagnostics_active = not diagnostics_active
-    if diagnostics_active then
-        vim.diagnostic.enable()
-    else
-        vim.diagnostic.disable()
-    end
+-- Make sure the state is tracked properly
+if _G.diagnostics_are_active == nil then
+  _G.diagnostics_are_active = true
 end
 
--- Set up a keybinding to toggle diagnostics
-vim.api.nvim_set_keymap('n', '<leader>D', ':lua ToggleDiagnostics()<CR>', { noremap = true, silent = true })
+function ToggleGlobalDiagnostics()
+  _G.diagnostics_are_active = not _G.diagnostics_are_active
+
+  local bufs = vim.api.nvim_list_bufs()
+
+  local toggle_func = _G.diagnostics_are_active and vim.diagnostic.show or vim.diagnostic.hide
+
+  for _, bufnr in ipairs(bufs) do
+    if vim.api.nvim_buf_is_loaded(bufnr) then
+      toggle_func(nil, bufnr)
+    end
+  end
+
+  if _G.diagnostics_are_active then
+    vim.notify("Global diagnostics ON", "info")
+  else
+    vim.notify("Global diagnostics OFF", "info")
+  end
+end
+
+vim.api.nvim_set_keymap('n', '<leader>D', '<Cmd>lua ToggleGlobalDiagnostics()<CR>', { noremap = true, silent = true })
 -- Explicit Global mapping for Code Action
 vim.api.nvim_set_keymap('n', '<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true, desc = "LSP Code Action (Global)" })
