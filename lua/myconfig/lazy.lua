@@ -48,11 +48,6 @@ require("lazy").setup({
         opts = {},
     },
     {
-        "vhyrro/luarocks.nvim",
-        priority = 1000, -- Very high priority is required, luarocks.nvim should run as the first plugin in your config.
-        config = true,
-    },
-    {
         "Diogo-ss/42-header.nvim",
         cmd = { "Stdheader" },
         keys = { "<F1>" },

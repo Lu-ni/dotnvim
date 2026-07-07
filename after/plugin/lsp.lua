@@ -101,7 +101,7 @@ vim.lsp.config('lua_ls', {
 
 require('mason').setup({})
 require('mason-lspconfig').setup({
-    ensure_installed = { 'clangd', 'ruff', 'basedpyright', 'lua_ls', 'html', 'emmet_ls', 'htmx', 'jinja_lsp' },
+    ensure_installed = { 'clangd', 'ruff', 'basedpyright', 'lua_ls', 'html', 'emmet_ls', 'jinja_lsp' },
     -- mason-lspconfig v2 auto-enables installed servers via vim.lsp.enable.
     -- pylsp is excluded: basedpyright handles Python completion/types and, unlike
     -- pylsp/jedi, resolves globals from __builtins__.py. Leaving both on would
