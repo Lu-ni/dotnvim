@@ -1,76 +1,106 @@
 -- ~/.config/nvim/lua/my_cpp_utils.lua
--- (or any other location in your Lua runtime path, e.g., lua/utils/cpp.lua)
-
--- This module provides utility functions for C++ development in Neovim.
 local M = {}
 
---- Generates C++ header boilerplate following the Orthodox Canonical Form (OCF).
--- Inserts include guards, class definition with default constructor,
--- copy constructor, copy assignment operator, and virtual destructor.
--- @usage Call this function from a command or mapping, e.g.,
--- vim.api.nvim_create_user_command('GenHpp', M.generate_hpp_boilerplate, {})
-function M.generate_hpp_boilerplate()
-  -- Get the current buffer handle (0 for current buffer)
-  local buf = 0
+-- Helper function to check if a file exists
+local function file_exists(name)
+  local f = io.open(name, "r")
+  if f ~= nil then
+    io.close(f)
+    return true
+  else
+    return false
+  end
+end
 
-  -- Check if the buffer is empty (only 1 line which is empty)
-  if vim.fn.line('$') ~= 1 or vim.fn.getline(1) ~= '' then
-    vim.notify("Buffer is not empty. Boilerplate not generated.", vim.log.levels.WARN)
+-- Helper function to write lines to a file
+local function write_to_file(path, lines)
+  local f = io.open(path, "w")
+  if not f then return false end
+  for _, line in ipairs(lines) do
+    f:write(line .. "\n")
+  end
+  f:close()
+  return true
+end
+
+--- Creates .hpp and .cpp files for a C++ class in Orthodox Canonical Form
+-- @param args The arguments passed to the command (the class name)
+function M.create_class_pair(opts)
+  local classname = opts.args
+
+  -- Validate input
+  if not classname or classname == "" then
+    vim.notify("Please provide a class name.", vim.log.levels.ERROR)
     return
   end
 
-  -- Get the full filename (e.g., MyClass.hpp)
-  local filename = vim.fn.expand('%:t')
-  if filename == '' then
-    vim.notify("Cannot generate boilerplate: No filename.", vim.log.levels.ERROR)
+  local hpp_filename = classname .. ".hpp"
+  local cpp_filename = classname .. ".cpp"
+
+  -- Prevent overwriting existing files
+  if file_exists(hpp_filename) or file_exists(cpp_filename) then
+    vim.notify("Error: Files for '" .. classname .. "' already exist.", vim.log.levels.ERROR)
     return
   end
 
-  -- Basic check for .hpp or .h extension - adapt if you use other extensions
-  if not string.match(filename, "%.hpp$") and not string.match(filename, "%.h$") then
-      vim.notify("Warning: File does not end with .hpp or .h.", vim.log.levels.WARN)
-      -- Consider returning here if strict adherence to .hpp/.h is required:
-      -- return
-  end
-
-
-  -- Get the filename without extension (e.g., MyClass) to use as the class name
-  local classname = vim.fn.expand('%:t:r')
-  -- Optional: Sanitize classname if filenames can contain invalid characters
-  -- classname = string.gsub(classname, "[^A-Za-z0-9_]", "_")
-
-  -- Generate the include guard symbol (e.g., MY_CLASS_HPP)
-  -- Replaces non-alphanumeric characters with underscores and converts to uppercase.
-  local guard_symbol = string.upper(string.gsub(filename, '[^A-Za-z0-9]', '_'))
-
-  -- Define the lines of code for the OCF boilerplate
-  local lines = {
-    '#pragma once ',
-    '', -- Empty line for separation
+  -- 1. Generate Content for HPP
+  local hpp_lines = {
+    '#pragma once',
+    '',
+    '#include <iostream>',
+    '',
     'class ' .. classname .. ' {',
     ' public:',
-    '  ' .. classname .. '();',                                -- Default Constructor
-    '  ' .. classname .. '(const ' .. classname .. '& other);', -- Copy Constructor
+    '  ' .. classname .. '();',                                         -- Default Constructor
+    '  ' .. classname .. '(const ' .. classname .. '& other);',          -- Copy Constructor
     '  ' .. classname .. '& operator=(const ' .. classname .. '& other);', -- Copy Assignment Operator
-    '  virtual ~' .. classname .. '();',                      -- Virtual Destructor (good practice)
+    '  ~' .. classname .. '();',                                         -- Destructor
     '',
     ' private:',
-    '  // Private members go here', -- Placeholder comment for private section
     '',
     '};',
   }
 
-  -- Replace the entire buffer content (start=0, end=-1, strict_indexing=false)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  -- 2. Generate Content for CPP
+  local cpp_lines = {
+    '#include "' .. hpp_filename .. '"',
+    '',
+    '// Default Constructor',
+    classname .. '::' .. classname .. '() {',
+    '}',
+    '',
+    '// Copy Constructor',
+    classname .. '::' .. classname .. '(const ' .. classname .. '& other) {',
+    '  *this = other;',
+    '}',
+    '',
+    '// Copy Assignment Operator',
+    classname .. '& ' .. classname .. '::operator=(const ' .. classname .. '& other) {',
+    '  if (this != &other) {',
+    '    // super::operator=(other);',
+    '    // _member = other._member;',
+    '  }',
+    '  return *this;',
+    '}',
+    '',
+    '// Destructor',
+    classname .. '::' .. classname .. '::~' .. classname .. '() {',
+    '}',
+  }
 
-  -- Optional: Move the cursor to a convenient position,
-  -- e.g., inside the private section.
-  -- Lines are 1-based, columns are 0-based for set_cursor.
-  -- Move to line 12 (line with '// Private members go here'), column 2 (indented).
-  vim.api.nvim_win_set_cursor(0, {12, 2})
+  -- 3. Write files
+  local hpp_ok = write_to_file(hpp_filename, hpp_lines)
+  local cpp_ok = write_to_file(cpp_filename, cpp_lines)
 
-  vim.notify("OCF HPP boilerplate generated for " .. classname, vim.log.levels.INFO)
+  if hpp_ok and cpp_ok then
+    vim.notify("Created " .. hpp_filename .. " and " .. cpp_filename, vim.log.levels.INFO)
+    
+    -- Open the files (Open cpp, then split open hpp)
+    vim.cmd("edit " .. cpp_filename)
+    vim.cmd("vsplit " .. hpp_filename)
+  else
+    vim.notify("Error writing files.", vim.log.levels.ERROR)
+  end
 end
 
 return M
-

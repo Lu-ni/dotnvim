@@ -30,6 +30,7 @@ vim.opt.signcolumn = "yes"
 vim.opt.isfname:append("@-@")
 
 vim.opt.updatetime = 50
+vim.opt.timeoutlen = 500
 
 vim.opt.colorcolumn = "120"
 --folding king https://www.jackfranklin.co.uk/blog/code-folding-in-vim-neovim/
